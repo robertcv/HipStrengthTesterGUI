@@ -14,11 +14,13 @@ class DoubleLoadCellConnectionThread(QThread):
         self._tare = True
 
     def run(self):
-        try:
-            f1, f2 = self.con.readline().rstrip().split(b',')
-            self.sig.emit(float(f1), float(f2))
-        except:
-            pass
-        if self._tare:
-            self.con.write(b't')
-            self._tare = False
+        while True:
+            try:
+                s = self.con.readline()
+                f1, f2 = s.rstrip().split(b',')
+                self.sig.emit((float(f1), float(f2)))
+            except:
+                pass
+            if self._tare:
+                self.con.write(b't')
+                self._tare = False
