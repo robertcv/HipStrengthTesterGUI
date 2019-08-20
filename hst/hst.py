@@ -216,20 +216,6 @@ class Subject:
                                  [self.get_ratio(i) for i in range(4)]))
 
 
-BAUDS = [
-    '4800',
-    '9600',
-    '14400',
-    '19200',
-    '28800',
-    '38400',
-    '57600',
-    '115200',
-    '230400',
-    '1000000',
-]
-
-
 class ConnectionSettings(QDialog):
 
     def __init__(self, port=None):
@@ -304,6 +290,11 @@ class HstGUI(QMainWindow):
         new_measurements_action.setShortcut('Ctrl+N')
         new_measurements_action.triggered.connect(self.setup_new_measurements)
 
+        open_measurements_action = QAction(QIcon.fromTheme('document-open'),
+                                       'Open measurements', self)
+        open_measurements_action.setShortcut('Ctrl+o')
+        open_measurements_action.triggered.connect(self.open_measurements)
+
         quit_action = QAction('Quit', self)
         quit_action.setShortcut('Ctrl+Q')
         quit_action.triggered.connect(self.closeEvent)
@@ -329,6 +320,7 @@ class HstGUI(QMainWindow):
 
         file_menu = main_menu.addMenu('&File')
         file_menu.addAction(new_measurements_action)
+        file_menu.addAction(open_measurements_action)
         file_menu.addAction(quit_action)
 
         subject_menu = main_menu.addMenu('&Subject')
@@ -341,14 +333,17 @@ class HstGUI(QMainWindow):
         connection_menu.addAction(tare_action)
 
     def update_display(self):
-        for i in range(4):
-            self.body.forces[i].setText(
-                f"{self.current_subject.get_max_force(i)} N")
-            self.body.ratios[i].setText(
-                f"{self.current_subject.get_ratio(i):.2f}")
+        if self.current_subject is not None:
+            for i in range(4):
+                self.body.forces[i].setText(
+                    f"{self.current_subject.get_max_force(i)} N")
+                self.body.ratios[i].setText(
+                    f"{self.current_subject.get_ratio(i):.2f}")
+        else:
+            self.clear()
 
     def check_for_measurements(self):
-        if self.save_file == None:
+        if self.save_file is None:
             QMessageBox.warning(self, "Stop!",
                                 "First create new measurements!")
             return False
@@ -361,8 +356,13 @@ class HstGUI(QMainWindow):
             with open(self.save_file, "w") as file:
                 file.write("name,birth_date,height,weight,dominant_foot,F_left_add,F_right_add,F_left_abd,F_right_abd,R_left,R_right,R_add,R_abd\n")
 
+    def open_measurements(self):
+        file_location = QFileDialog.getOpenFileName(self, 'Open File', ".csv")
+        if file_location[0]:
+            self.save_file = file_location[0]
+
     def check_for_subject(self):
-        if self.current_subject == None:
+        if self.current_subject is None:
             QMessageBox.warning(self, "Stop!",
                                 "First create new subject!")
             return False
@@ -402,13 +402,14 @@ class HstGUI(QMainWindow):
             self.current_subject.reset_force(args[0])
 
     def new_data(self, data):
-        f1, f2 = int(data[0]), int(data[1])
-        if self.current_type == ADDUCTOR:
-            self.current_subject.new_force(f1, LEFT_ADD)
-            self.current_subject.new_force(f2, RIGHT_ADD)
-        elif self.current_type == ABDUCTOR:
-            self.current_subject.new_force(f1, LEFT_ABD)
-            self.current_subject.new_force(f2, RIGHT_ABD)
+        if self.current_subject is not None:
+            f1, f2 = abs(int(data[0])), abs(int(data[1]))
+            if self.current_type == ADDUCTOR:
+                self.current_subject.new_force(f1, LEFT_ADD)
+                self.current_subject.new_force(f2, RIGHT_ADD)
+            elif self.current_type == ABDUCTOR:
+                self.current_subject.new_force(f1, LEFT_ABD)
+                self.current_subject.new_force(f2, RIGHT_ABD)
 
     def is_connected(self):
         return self.connection is not None and self.connection_thread is not None
@@ -441,6 +442,7 @@ class HstGUI(QMainWindow):
                                                                 self.new_data)
         self.connection_thread.start()
         self.resultsTimer.start()
+        self.tare()
 
     def connection_close(self):
         if self.is_connected():
