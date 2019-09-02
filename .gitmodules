@@ -1,0 +1,3 @@
+[submodule "controller/libraries/HX711"]
+	path = controller/libraries/HX711
+	url = https://github.com/eydin/HX711
