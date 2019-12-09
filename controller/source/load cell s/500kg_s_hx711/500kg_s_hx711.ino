@@ -27,13 +27,13 @@ float units_right;
 void setup() {
   Serial.begin(9600);
   scale_left.tare();
-  scale_right.set_scale(-870);
-  scale_left.tare();
+  scale_left.set_scale(-870);
+  scale_right.tare();
   scale_right.set_scale(868);
 }
 
 void loop() {
-  units_left = scale_right.get_units();
+  units_left = scale_left.get_units();
   units_right = scale_right.get_units();
   Serial.print(units_left);
   Serial.print(", ");
