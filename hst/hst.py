@@ -215,6 +215,9 @@ class Subject:
                                  self.forces +
                                  [self.get_ratio(i) for i in range(4)]))
 
+    def clear(self):
+        self.forces = [0 for _ in range(4)]
+
 
 class ConnectionSettings(QDialog):
 
@@ -339,8 +342,6 @@ class HstGUI(QMainWindow):
                     f"{self.current_subject.get_max_force(i)} N")
                 self.body.ratios[i].setText(
                     f"{self.current_subject.get_ratio(i):.2f}")
-        else:
-            self.clear()
 
     def check_for_measurements(self):
         if self.save_file is None:
@@ -375,6 +376,7 @@ class HstGUI(QMainWindow):
         dialog = Subject.SubjectWidget()
         dialog.exec_()
         self.current_subject = dialog.subject
+        self.update_display()
 
     def save_subject(self):
         if not self.check_for_subject():
@@ -386,11 +388,9 @@ class HstGUI(QMainWindow):
         self.clear()
 
     def clear(self):
-        for i in range(4):
-            self.body.forces[i].setText("0 N")
-            self.body.ratios[i].setText("0")
-
-        self.current_subject = None
+        self.current_subject.clear()
+        self.start_reset((ADDUCTOR, START))
+        self.update_display()
 
     def start_reset(self, args):
         if not self.check_for_connection():
@@ -442,7 +442,6 @@ class HstGUI(QMainWindow):
                                                                 self.new_data)
         self.connection_thread.start()
         self.resultsTimer.start()
-        self.tare()
 
     def connection_close(self):
         if self.is_connected():
