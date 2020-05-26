@@ -1,25 +1,18 @@
 /*
- Setup your scale and start the sketch WITHOUT a weight on the scale
- Once readings are displayed place the weight on the scale
- Press +/- or a/z to adjust the calibration_factor until the output readings match the known weight
- Arduino pin A0 -> HX711 CLK
- Arduino pin A1 -> HX711 DOUT
- Arduino pin 5V -> HX711 VCC
- Arduino pin GND -> HX711 GND 
-
- red E+
- black E-
+ differes from manufacturet to manufacture
+ black E+
+ white E-
  green A-
- white A+t
+ red A+
 */
 
 #include "HX711.h"
-//        DOUT, CLK
+//               DOUT, CLK
 HX711 scale_left(2, 3);
 HX711 scale_right(4, 5);
 
-// left factor -870
-// right factor 868
+// left factor 2135
+// right factor 2113
 
 float units_left;
 float units_right;
@@ -27,9 +20,9 @@ float units_right;
 void setup() {
   Serial.begin(9600);
   scale_left.tare();
-  scale_left.set_scale(-870);
+  scale_left.set_scale(2135);
   scale_right.tare();
-  scale_right.set_scale(868);
+  scale_right.set_scale(2113);
 }
 
 void loop() {
