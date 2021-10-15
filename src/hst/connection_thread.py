@@ -17,8 +17,8 @@ class DoubleLoadCellConnectionThread(QThread):
         while True:
             try:
                 s = self.con.readline()
-                f1, f2 = s.rstrip().split(b',')
-                self.sig.emit((float(f1), float(f2)))
+                t, f1, f2 = s.rstrip().split(b',')
+                self.sig.emit((float(t), float(f1), float(f2)))
             except:
                 pass
             if self._tare:

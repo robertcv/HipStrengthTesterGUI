@@ -1,5 +1,5 @@
 /*
- differes from manufacturet to manufacture
+ differs from manufacturer to manufacture
  black E+
  white E-
  green A-
@@ -7,31 +7,42 @@
 */
 
 #include "HX711.h"
-//               DOUT, CLK
-HX711 scale_left(2, 3);
-HX711 scale_right(4, 5);
+#include "TimerOne.h"
+
+//                DOUT, CLK
+HX711 scale_left( 2,    3);
+HX711 scale_right(4,    5);
 
 // left factor 2135
 // right factor 2113
 
-float units_left;
-float units_right;
+int units_left, units_right;
+int time_counter = 0;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
+  
   scale_left.tare();
   scale_left.set_scale(2135);
   scale_right.tare();
   scale_right.set_scale(2113);
+
+  // every 10 ms -> 100Hz
+  Timer1.initialize(10000);
+  Timer1.attachInterrupt(make_measurement);
 }
 
-void loop() {
-  units_left = scale_left.get_units();
-  units_right = scale_right.get_units();
+void make_measurement() {
+  units_left = (int)scale_left.get_units();  // takes around 0.4 ms
+  units_right = (int)scale_right.get_units();
+
+  Serial.print(time_counter);
+  Serial.print(",");
   Serial.print(units_left);
-  Serial.print(", ");
+  Serial.print(",");
   Serial.print(units_right);
   Serial.print("\n");
+  
   if(Serial.available())
   {
     char temp = Serial.read();
@@ -40,5 +51,9 @@ void loop() {
       scale_left.tare();
     }
   }
-  delay(100);
+
+  time_counter++;
+}
+
+void loop() { 
 }

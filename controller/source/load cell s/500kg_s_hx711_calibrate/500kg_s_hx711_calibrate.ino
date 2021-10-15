@@ -1,5 +1,5 @@
 /*
- differes from manufacturet to manufacture
+ differs from manufacturer to manufacturer
  black E+
  white E-
  green A-

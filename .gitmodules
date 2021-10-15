@@ -1,3 +1,6 @@
 [submodule "controller/libraries/HX711"]
 	path = controller/libraries/HX711
 	url = https://github.com/eydin/HX711
+[submodule "controller/libraries/TimerOne"]
+	path = controller/libraries/TimerOne
+	url = https://github.com/PaulStoffregen/TimerOne
