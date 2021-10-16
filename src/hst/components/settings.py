@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QLabel,  QDialog, QPushButton,\
 class ConnectionSettingsDialog(QDialog):
     def __init__(self, port=None):
         super().__init__()
+        self.setWindowTitle("Connection settings!")
 
         self.port = port
 

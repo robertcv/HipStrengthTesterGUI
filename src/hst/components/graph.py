@@ -18,7 +18,7 @@ class PlotsWidget(QWidget):
         self.right_plot = PlotWidget()
 
         v = QHBoxLayout()
-        v.setContentsMargins(30, 15, 30, 30)
+        v.setContentsMargins(30, 15, 30, 15)
         v.addWidget(self.left_plot)
         v.addSpacing(30)
         v.addWidget(self.right_plot)
@@ -28,6 +28,10 @@ class PlotsWidget(QWidget):
         self.left_plot.update_plot(left_data)
         self.right_plot.update_plot(right_data)
 
+    def clear(self):
+        self.left_plot.clear_graph()
+        self.right_plot.clear_graph()
+
 
 class PlotWidget(pg.PlotWidget):
     def __init__(self):
@@ -35,20 +39,30 @@ class PlotWidget(pg.PlotWidget):
         self.plot_item = self.plot()
         self.start_line = None  # type: Optional[pg.InfiniteLine]
 
-        self.setMouseEnabled(False, False)  # disable moving plot with mouse
+        self.setMouseEnabled(True, False)  # disable moving plot with mouse
         self.setMenuEnabled(False)  # disable right click menu
         self.hideButtons()  # hide "A" button in bottom left corner
 
-    def add_target_line(self, target):
-        self.start_line = pg.InfiniteLine(
-            pos=target,
-            angle=90,
-            pen=pg.mkPen(color="k", style=Qt.DashLine)
-        )
-        self.plotItem.vb.addItem(self.start_line)
+    def add_starter_line(self, start_pos: float):
+        if self.start_line is None:
+            self.start_line = pg.InfiniteLine(
+                pos=start_pos,
+                angle=90,
+                pen=pg.mkPen(color="k", style=Qt.DashLine),
+                movable=True,
+            )
+            self.plotItem.vb.addItem(self.start_line)
+
+    def get_target_line(self) -> Optional[float]:
+        if self.start_line is not None:
+            return self.start_line.value()
 
     def update_plot(self, data: Data):
         self.plot_item.setData(data.x, data.y)
 
     def clear_graph(self):
         self.plot_item.setData([], [])
+        if self.start_line is not None:
+            self.plotItem.vb.removeItem(self.start_line)
+            self.start_line = None
+        self.plotItem.vb.setRange(xRange=(0, 1), yRange=(0, 1), padding=0, disableAutoRange=False)
