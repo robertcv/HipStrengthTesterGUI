@@ -17,7 +17,7 @@ class DoubleLoadCellConnectionThread(QThread):
     def run(self):
         # sometimes there is some data stuck in the buffer
         # trow away some of the first sent lines
-        for i in range(10):
+        for i in range(50):
             self.con.readline()
 
         while not self.stop:

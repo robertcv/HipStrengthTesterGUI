@@ -1,7 +1,7 @@
-from hst.connect import get_ports
+from PyQt5.QtWidgets import (QComboBox, QDialog, QDialogButtonBox, QGridLayout,
+                             QLabel, QPushButton, QVBoxLayout)
 
-from PyQt5.QtWidgets import QVBoxLayout, QLabel,  QDialog, QPushButton,\
-    QGridLayout, QComboBox, QDialogButtonBox
+from hst.connect import get_ports
 
 
 class ConnectionSettingsDialog(QDialog):

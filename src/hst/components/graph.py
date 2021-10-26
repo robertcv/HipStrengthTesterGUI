@@ -1,10 +1,10 @@
 from typing import Optional
 
-from hst.data import Data
-
 import pyqtgraph as pg
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QHBoxLayout
+from PyQt5.QtWidgets import QHBoxLayout, QWidget
+
+from hst.data import Data
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
@@ -66,3 +66,4 @@ class PlotWidget(pg.PlotWidget):
             self.plotItem.vb.removeItem(self.start_line)
             self.start_line = None
         self.plotItem.vb.setRange(xRange=(0, 1), yRange=(0, 1), padding=0, disableAutoRange=False)
+        self.plotItem.vb.enableAutoRange(axis='x')

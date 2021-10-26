@@ -1,4 +1,5 @@
 from collections import namedtuple
+from datetime import datetime, timezone
 
 import numpy as np
 
@@ -7,7 +8,7 @@ MEAN_ROLLING_SIZE = 5
 DataSet = namedtuple('DataSet', ['x', 'y'])
 ReportData = namedtuple(
     'ReportData',
-    ['max_force', 'max_angel', 'first_angle', 'second_angle']
+    ['datetime', 'max_force', 'max_angel', 'first_angle', 'second_angle']
 )
 
 
@@ -59,9 +60,12 @@ class Data:
     def y(self) -> np.ndarray:
         return self.filtered().y
 
-    def filtered(self):
+    def filtered(self) -> DataSet:
         if len(self.raw_time) > MEAN_ROLLING_SIZE:
             return mean_filter(DataSet(x=self.raw_time, y=self.raw_f))
+        return DataSet(x=self.raw_time, y=self.raw_f)
+
+    def get_raw(self) -> DataSet:
         return DataSet(x=self.raw_time, y=self.raw_f)
 
     def is_empty(self) -> bool:
@@ -113,7 +117,8 @@ class Data:
         second_force_angle = \
             (data.y[second_force_idx] - data.y[start_idx]) / 0.2
 
-        return ReportData(max_force, max_force_angle,
+        current_datetime = datetime.now(timezone.utc).astimezone().isoformat()[:19]
+        return ReportData(current_datetime, max_force, max_force_angle,
                           first_force_angle, second_force_angle)
 
     def clear(self):

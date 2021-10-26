@@ -1,7 +1,8 @@
-from hst.data import ReportData
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtWidgets import (QAbstractItemView, QHBoxLayout, QHeaderView,
+                             QTableWidget, QTableWidgetItem, QWidget)
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QTableWidget, QAbstractItemView, QHeaderView, QTableWidgetItem
-from PyQt5.QtCore import Qt, QSize
+from hst.data import ReportData
 
 ROW_HEADER = ["MAX FORCE", "MAX SLOPE", "100ms SLOPE", "200ms SLOPE"]
 
@@ -106,12 +107,13 @@ class ReportTableWidget(QTableWidget):
 
 if __name__ == '__main__':
     import sys
+
     from PyQt5.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     gui = ReportTableWidget()
-    gui.update_table(1, ReportData(1000, 0.52, 0.233, 0.234444))
-    gui.update_table(2, ReportData(1200, 0.32, 0.453, 0.5444))
+    gui.update_table(1, ReportData("", 1000, 0.52, 0.233, 0.234444))
+    gui.update_table(2, ReportData("", 1200, 0.32, 0.453, 0.5444))
     gui.clear()
     gui.show()
     sys.exit(app.exec_())

@@ -1,14 +1,14 @@
 from collections import namedtuple
 
-from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QGridLayout, \
-    QRadioButton, QButtonGroup, QHBoxLayout, QPushButton, QCompleter
 from PyQt5.QtCore import QRegExp, Qt, pyqtSignal
-from PyQt5.QtGui import QRegExpValidator, QIntValidator
-
+from PyQt5.QtGui import QIntValidator, QRegExpValidator
+from PyQt5.QtWidgets import (QButtonGroup, QCompleter, QGridLayout,
+                             QHBoxLayout, QLabel, QLineEdit, QPushButton,
+                             QRadioButton, QWidget)
 
 SubjectInfo = namedtuple(
     'SubjectInfo',
-    ['name', 'birth', 'height', 'weight', 'foot', 'exercise', 'repetition']
+    ['name', 'birth', 'height', 'weight', 'foot', 'lever', 'exercise', 'repetition']
 )
 EXERCISES = [
     "addukcija 90°", "abdukcija 90°", "notranja rotacija", "zunanja rotacija",
@@ -75,6 +75,8 @@ class SubjectWidget(QWidget):
         self.repetition_edit = QLineEdit("1")
         self.repetition_edit.setEnabled(False)
 
+        self.lever_edit = QLineEdit()
+
         grid = QGridLayout()
         grid.addWidget(LabelLineEdit("Name:", self.name_edit), 0, 0)
         grid.addWidget(LabelLineEdit("Birth date:", self.birth_date_edit), 0, 2)
@@ -83,10 +85,12 @@ class SubjectWidget(QWidget):
         grid.addWidget(LabelLineEdit("Weight:", self.weight_edit), 1, 2)
 
         grid.addLayout(h, 2, 0)
-        grid.addWidget(LabelLineEdit("Repetition:", self.repetition_edit), 2, 2)
+        grid.addWidget(LabelLineEdit("Lever:", self.lever_edit), 2, 2)
 
         grid.addWidget(LabelLineEdit("Exercise:", self.exercise_edit), 3, 0)
-        grid.addWidget(self.new_btn, 3, 2)
+        grid.addWidget(LabelLineEdit("Repetition:", self.repetition_edit), 3, 2)
+
+        grid.addWidget(self.new_btn, 4, 2)
 
         grid.setColumnMinimumWidth(0, 300)
         grid.setColumnStretch(0, 1)
@@ -107,6 +111,7 @@ class SubjectWidget(QWidget):
             self.height_edit.text(),
             self.weight_edit.text(),
             "right" if self.dominant_foot.checkedId() else "left",
+            self.lever_edit.text(),
             self.exercise_edit.text(),
             self.repetition_edit.text()
         )
@@ -119,6 +124,7 @@ class SubjectWidget(QWidget):
         self.birth_date_edit.setText("")
         self.height_edit.setText("")
         self.weight_edit.setText("")
+        self.lever_edit.setText("")
 
         # uncheck the dominant foot radio buttons
         self.dominant_foot.setExclusive(False)
@@ -132,6 +138,7 @@ class SubjectWidget(QWidget):
 
 if __name__ == '__main__':
     import sys
+
     from PyQt5.QtWidgets import QApplication
 
     app = QApplication(sys.argv)

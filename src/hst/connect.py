@@ -1,4 +1,5 @@
 import os
+
 from serial import Serial
 from serial.tools.list_ports import grep
 

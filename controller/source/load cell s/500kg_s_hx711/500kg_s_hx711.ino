@@ -13,31 +13,29 @@
 HX711 scale_left( 2,    3);
 HX711 scale_right(4,    5);
 
-// left factor 2135
-// right factor 2113
+// left factor 2075
+// right factor 2090
 
-int units_left, units_right;
-long time_counter = 0;
+volatile int units_left, units_right;
+volatile long time_counter = 0;
 
 void setup() {
   Serial.begin(115200);
   
   scale_left.tare();
-  scale_left.set_scale(2135);
+  scale_left.set_scale(2075);
   scale_right.tare();
-  scale_right.set_scale(2113);
+  scale_right.set_scale(2090);
 
-  // we could theoreticly increas to 1kHz
-  // every 10 ms -> 100Hz
-  Timer1.initialize(10000);
+  Timer1.initialize(100000);
   Timer1.attachInterrupt(make_measurement);
 }
 
 void make_measurement() {
-  units_left = (int)scale_left.get_units();  // takes around 0.4 ms
-  units_right = (int)scale_right.get_units();  // takes around 0.4 ms
+  units_left = (int)scale_left.get_units();
+  units_right = (int)scale_right.get_units();
 
-  Serial.print(time_counter / 10000, 2);
+  Serial.print(time_counter / 10.0, 2);
   Serial.print(",");
   Serial.print(units_left);
   Serial.print(",");

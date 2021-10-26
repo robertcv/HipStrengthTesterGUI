@@ -1,14 +1,16 @@
+from PyQt5.QtCore import QStandardPaths, QTimer
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import (QAction, QFileDialog, QHBoxLayout, QMainWindow,
+                             QMessageBox, QPushButton, QVBoxLayout, QWidget)
+
+from hst.components import (ConnectionSettingsDialog, PlotsWidget,
+                            ReportsWidget, SubjectWidget)
 from hst.connect import Connection
 from hst.connection_thread import DoubleLoadCellConnectionThread
-from hst.components import ConnectionSettingsDialog, SubjectWidget, PlotsWidget, ReportsWidget
 from hst.data import Data
+from hst.save import save_raw_run, save_run
 
-from PyQt5.QtWidgets import QMainWindow, QAction, QMessageBox, QWidget,\
-    QVBoxLayout, QLabel, QFileDialog, QLineEdit, QDialog, QPushButton,\
-    QGridLayout, QComboBox, QDialogButtonBox, QRadioButton, QButtonGroup,\
-    QHBoxLayout
-from PyQt5.QtCore import QTimer, pyqtSignal, QRegExp
-from PyQt5.QtGui import QIcon, QRegExpValidator, QIntValidator
+DOCUMENTS_PATH = QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
 
 NULL = 0
 CONNECTED = 1
@@ -24,9 +26,10 @@ class HstGUI(QMainWindow):
         super().__init__()
         self.setGeometry(50, 50, 1500, 1200)
         self.setMinimumSize(1500, 1200)
-        self.setWindowTitle('Hip Strength Tester v2')
+        self.setWindowTitle('Hip Strength Tester')
 
         self.gui_state = NULL
+        self.project_location = None
 
         self.left_data = Data()
         self.right_data = Data()
@@ -83,19 +86,15 @@ class HstGUI(QMainWindow):
         self.resultsTimer.setInterval(30)
 
     def _init_menu(self):
-        new_measurements_action = QAction(
-            QIcon.fromTheme('document-new'), 'New measurements', self)
-        new_measurements_action.setShortcut('Ctrl+n')
-        new_measurements_action.triggered.connect(self.setup_new_measurements)
+        new_project_action = QAction(
+            QIcon.fromTheme('document-new'), 'New Project', self)
+        new_project_action.setShortcut('Ctrl+n')
+        new_project_action.triggered.connect(self.setup_new_project)
 
-        open_measurements_action = QAction(
-            QIcon.fromTheme('document-open'), 'Open measurements', self)
-        open_measurements_action.setShortcut('Ctrl+o')
-        open_measurements_action.triggered.connect(self.open_measurements)
-
-        quit_action = QAction('Quit', self)
-        quit_action.setShortcut('Ctrl+q')
-        quit_action.triggered.connect(self.closeEvent)
+        open_project_action = QAction(
+            QIcon.fromTheme('document-open'), 'Open Project', self)
+        open_project_action.setShortcut('Ctrl+o')
+        open_project_action.triggered.connect(self.open_project)
 
         open_connection_action = QAction(
             QIcon.fromTheme('media-playback-start'), 'Connect', self)
@@ -111,9 +110,8 @@ class HstGUI(QMainWindow):
         main_menu = self.menuBar()
 
         file_menu = main_menu.addMenu('&File')
-        file_menu.addAction(new_measurements_action)
-        file_menu.addAction(open_measurements_action)
-        file_menu.addAction(quit_action)
+        file_menu.addAction(new_project_action)
+        file_menu.addAction(open_project_action)
 
         connection_menu = main_menu.addMenu('&Connection')
         connection_menu.addAction(open_connection_action)
@@ -160,8 +158,10 @@ class HstGUI(QMainWindow):
                                 "First set thresholds!")
             return
 
-        left_report_data = self.left_data.get_report(self.plots.left_plot.get_target_line())
-        right_report_data = self.right_data.get_report(self.plots.right_plot.get_target_line())
+        left_report_data = self.left_data.get_report(
+            self.plots.left_plot.get_target_line())
+        right_report_data = self.right_data.get_report(
+            self.plots.right_plot.get_target_line())
         self.save_repetition(left_report_data, right_report_data)
         self.reports.update_tables(self.subject.get_subject_data().repetition,
                                    left_report_data, right_report_data)
@@ -172,12 +172,18 @@ class HstGUI(QMainWindow):
 
     def save_repetition(self, left_report, right_report):
         subject_report = self.subject.get_subject_data()
+        save_run(self.project_location, subject_report, left_report, right_report)
+        save_raw_run(self.project_location, left_report.datetime, subject_report.name,
+                     self.left_data.get_raw(), self.right_data.get_raw())
 
-    def setup_new_measurements(self):
-        pass
+    def _get_project_location(self):
+        self.project_location = QFileDialog.getExistingDirectory(self, 'Open Project ', DOCUMENTS_PATH)
 
-    def open_measurements(self):
-        pass
+    def setup_new_project(self):
+        self._get_project_location()
+
+    def open_project(self):
+        self._get_project_location()
 
     def new_data(self, data):
         if self.gui_state == RUNNING:
@@ -189,6 +195,11 @@ class HstGUI(QMainWindow):
         return self.connection is not None and self.connection_thread is not None
 
     def connection_open(self):
+        if self.project_location is None:
+            QMessageBox.warning(self, "Warning!",
+                                "No Project created/opened!")
+            return
+
         dialog = ConnectionSettingsDialog(self.port)
         dialog.exec_()
         self.port = dialog.port
@@ -202,8 +213,8 @@ class HstGUI(QMainWindow):
 
         self.connection = Connection(self.port, BAUD)
         self.connection.open()
-        self.connection_thread = DoubleLoadCellConnectionThread(self.connection,
-                                                                self.new_data)
+        self.connection_thread = \
+            DoubleLoadCellConnectionThread(self.connection, self.new_data)
         self.connection_thread.start()
         self.gui_state = CONNECTED
 
@@ -227,6 +238,7 @@ class HstGUI(QMainWindow):
 
 if __name__ == '__main__':
     import sys
+
     from PyQt5.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
