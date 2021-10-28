@@ -47,6 +47,8 @@ def save_raw_run(location: str, run_datetime: str, subject_name: str,
     if not os.path.exists(location):
         return
 
+    # windows does not support ":" as filename
+    run_datetime = run_datetime.replace(":", "-")
     save_file = os.path.join(location, f"{run_datetime}_{subject_name}.csv")
     with open(save_file, "w") as f:
         f.write("time,left,right\n")
